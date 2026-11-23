@@ -15,7 +15,7 @@ script/source = "extends Node2D
 @export_group(\"Nagrywanie chartu\")
 @export var record_mode: bool = false
 @export var record_pitch_scale: float = 0.75
-@export var snap_step: float = 0.25 # 0.25 = szesnastka 0.5 = ósemka 0.0 = bez przyciągania
+@export var snap_step: float = 0.25 # 0.25 = szesnastka 0.5 = osemka 0.0 = bez przyciągania
 @export var chart_path: String = \"res://charts/unity.json\"
 
 const LANE_COUNT := 4
