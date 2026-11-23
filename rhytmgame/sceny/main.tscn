@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://be0nxbpoqo2u5"]
 
 [ext_resource type="AudioStream" uid="uid://dryj4wyi7bf46" path="res://muzyczki/TheFatRat - Unity.mp3" id="1_b4mbv"]
+[ext_resource type="PackedScene" uid="uid://vqbivxrhj0qj" path="res://sceny/tile.tscn" id="1_mh27j"]
 
 [sub_resource type="GDScript" id="GDScript_46r8n"]
 script/source = "extends Node2D
@@ -11,25 +12,243 @@ script/source = "extends Node2D
 @export var hit_window: float = 0.16
 @export var miss_window: float = 0.22
 
-@export_group(\"recording chart\")
+@export_group(\"Nagrywanie chartu\")
 @export var record_mode: bool = false
 @export var record_pitch_scale: float = 0.75
 @export var snap_step: float = 0.25 # 0.25 = szesnastka 0.5 = ósemka 0.0 = bez przyciągania
-@export var chart_path: String = \"user://chart.json\"
+@export var chart_path: String = \"res://charts/unity.json\"
+
+const LANE_COUNT := 4
+const LANE_KEYS := [\"lane0\", \"lane1\", \"lane2\", \"lane3\"]
+
+@onready var music_player: AudioStreamPlayer = $MusicPlayer
+@onready var hit_lane: Marker2D = $HitLane
+@onready var notes_container: Node2D = $NotesContainer
+@onready var score_label: Label = $CanvasLayer/ScoreLabel
+
+
+var chart_notes: Array = []
+var recorded_notes: Array = []
+var next_spawn_index: int = 0
+var active_tiles: Array = []
+var lane_centers: Array[float] = []
+var lane_width: float = 120.0
+
+var score: int = 0
+var combo: int = 0
+var song_started: bool = false
+
+func _ready() -> void:
+	_setup_lanes()
+	if record_mode:
+		_load_existing_chart_if_present()
+		music_player.pitch_scale = record_pitch_scale
+		_update_ui(\"REC: click keys, S = save\")
+	else:
+		_load_chart()
+		music_player.pitch_scale = 1.0
+		_update_ui(\"start\")
+
+	music_player.play()
+	song_started = true
+
+func _setup_lanes() -> void:
+	var viewport_width := get_viewport_rect().size.x
+	lane_width = min(130.0, viewport_width / LANE_COUNT)
+	var total_width := lane_width * LANE_COUNT
+	var start_x := (viewport_width - total_width) / 2.0 + lane_width / 2.0
+
+	lane_centers.clear()
+	for i in range(LANE_COUNT):
+		lane_centers.append(start_x + i * lane_width)
+
+func _load_existing_chart_if_present() -> void:
+	if FileAccess.file_exists(chart_path):
+		var file := FileAccess.open(chart_path, FileAccess.READ)
+		if file:
+			var parsed = JSON.parse_string(file.get_as_text())
+			if typeof(parsed) == TYPE_DICTIONARY and parsed.has(\"notes\"):
+				recorded_notes = parsed[\"notes\"].duplicate(true)
+
+func _load_chart() -> void:
+	var beat_duration := 60.0 / bpm
+	chart_notes.clear()
+
+	if FileAccess.file_exists(chart_path):
+		var file := FileAccess.open(chart_path, FileAccess.READ)
+		if file:
+			var parsed = JSON.parse_string(file.get_as_text())
+			if typeof(parsed) == TYPE_DICTIONARY and parsed.has(\"notes\"):
+				for item in parsed[\"notes\"]:
+					if item.has(\"beat\") and item.has(\"lane\"):
+						chart_notes.append({
+							\"time\": float(item[\"beat\"]) * beat_duration,
+							\"lane\": int(item[\"lane\"])
+						})
+
+	if chart_notes.is_empty():
+		var fallback_beats := [
+			{\"beat\": 2.0, \"lane\": 0},
+			{\"beat\": 2.5, \"lane\": 1},
+			{\"beat\": 3.0, \"lane\": 2},
+			{\"beat\": 3.5, \"lane\": 3},
+			{\"beat\": 4.0, \"lane\": 1},
+			{\"beat\": 4.5, \"lane\": 2},
+		]
+		for item in fallback_beats:
+			chart_notes.append({
+				\"time\": float(item[\"beat\"]) * beat_duration,
+				\"lane\": int(item[\"lane\"])
+			})
+
+	chart_notes.sort_custom(func(a, b): return a[\"time\"] < b[\"time\"])
+
+func _get_song_time() -> float:
+	if not music_player.playing:
+		return 0.0
+	return music_player.get_playback_position() + AudioServer.get_time_since_last_mix()
+
+func _process(_delta: float) -> void:
+	if not song_started:
+		return
+
+	var song_time := _get_song_time()
+
+	if record_mode:
+		for tile in active_tiles:
+			if is_instance_valid(tile):
+				tile.update_position(song_time)
+		return
+
+	while next_spawn_index < chart_notes.size():
+		var note_data = chart_notes[next_spawn_index]
+		if note_data[\"time\"] - song_time <= approach_time:
+			_spawn_tile(note_data[\"lane\"], note_data[\"time\"])
+			next_spawn_index += 1
+		else:
+			break
+
+	for i in range(active_tiles.size() - 1, -1, -1):
+		var tile = active_tiles[i]
+		if not is_instance_valid(tile):
+			active_tiles.remove_at(i)
+			continue
+
+		tile.update_position(song_time)
+
+		if not tile.is_hit and (song_time - tile.target_time) > miss_window:
+			_register_miss(tile)
+			active_tiles.remove_at(i)
+
+func _unhandled_input(event: InputEvent) -> void:
+	var song_time := _get_song_time()
+
+	if record_mode:
+		if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_S:
+			_save_recorded_chart()
+			return
+
+		for lane_idx in range(LANE_COUNT):
+			if event.is_action_pressed(LANE_KEYS[lane_idx]):
+				_record_note(lane_idx, song_time)
+		return
+
+	for lane_idx in range(LANE_COUNT):
+		if event.is_action_pressed(LANE_KEYS[lane_idx]):
+			_try_hit_lane(lane_idx, song_time)
+
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		var clicked_lane := _get_lane_from_x(event.position.x)
+		if clicked_lane != -1:
+			_try_hit_lane(clicked_lane, song_time)
+
+func _record_note(lane: int, song_time: float) -> void:
+	var beat_duration := 60.0 / bpm
+	var exact_beat := song_time / beat_duration
+	var final_beat = snapped(exact_beat, snap_step) if snap_step > 0.0 else exact_beat
+
+	recorded_notes.append({
+		\"beat\": final_beat,
+		\"lane\": lane
+	})
+	var target_seconds = final_beat * beat_duration
+	_spawn_tile(lane, target_seconds)
+	_update_ui(\"REC | Nut: %d | Beat: %.2f\" % [recorded_notes.size(), final_beat])
+
+func _save_recorded_chart() -> void:
+	recorded_notes.sort_custom(func(a, b): return a[\"beat\"] < b[\"beat\"])
+	var payload := {
+		\"bpm\": bpm,
+		\"notes\": recorded_notes
+	}
+	var file := FileAccess.open(chart_path, FileAccess.WRITE)
+	if file:
+		file.store_string(JSON.stringify(payload, \"\\t\"))
+		file.close()
+		_update_ui(\"saved (%d notes) -> %s\" % [recorded_notes.size(), chart_path])
+
+func _get_lane_from_x(x_pos: float) -> int:
+	for i in range(LANE_COUNT):
+		var half_w := lane_width / 2.0
+		if abs(x_pos - lane_centers[i]) <= half_w:
+			return i
+	return -1
+
+func _spawn_tile(lane: int, target_time: float) -> void:
+	var tile := tile_scene.instantiate()
+	notes_container.add_child(tile)
+	tile.setup(lane, target_time, lane_centers[lane], hit_lane.position.y, approach_time, lane_width)
+	active_tiles.append(tile)
+
+func _try_hit_lane(lane: int, song_time: float) -> void:
+	var best_tile = null
+	var best_diff: float = INF
+
+	for tile in active_tiles:
+		if not is_instance_valid(tile) or tile.is_hit or tile.lane != lane:
+			continue
+		var diff: float = abs(song_time - tile.target_time)
+		if diff <= hit_window and diff < best_diff:
+			best_diff = diff
+			best_tile = tile
+
+	if best_tile != null:
+		best_tile.is_hit = true
+		combo += 1
+		var points := 300 if best_diff <= 0.05 else 100
+		score += points * max(1, combo / 10 + 1)
+		_update_ui(\"perfect!\" if best_diff <= 0.05 else \"good\")
+		active_tiles.erase(best_tile)
+		best_tile.queue_free()
+
+func _register_miss(tile) -> void:
+	combo = 0
+	_update_ui(\"miss\")
+	tile.queue_free()
+
+func _update_ui(judgement: String) -> void:
+	score_label.text = \"%s | score: %d | combo: x%d\" % [judgement, score, combo]
 "
 
 [node name="Main" type="Node2D" unique_id=1461893033]
 script = SubResource("GDScript_46r8n")
+tile_scene = ExtResource("1_mh27j")
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=642165050]
 position = Vector2(575, 324)
 
-[node name="Music" type="AudioStreamPlayer" parent="." unique_id=1967065900]
+[node name="MusicPlayer" type="AudioStreamPlayer" parent="." unique_id=1967065900]
 stream = ExtResource("1_b4mbv")
 
 [node name="Lanes" type="Node2D" parent="." unique_id=2016731762]
 
-[node name="HitMarker" type="Marker2D" parent="." unique_id=1112532239]
+[node name="HitLane" type="Marker2D" parent="." unique_id=1112532239]
 position = Vector2(594, 488)
 
-[node name="NotesBox" type="Node2D" parent="." unique_id=1928295254]
+[node name="NotesContainer" type="Node2D" parent="." unique_id=1928295254]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1412352843]
+
+[node name="ScoreLabel" type="Label" parent="CanvasLayer" unique_id=908717537]
+offset_right = 40.0
+offset_bottom = 23.0
