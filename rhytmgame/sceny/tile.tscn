@@ -1,10 +1,13 @@
 [gd_scene format=3 uid="uid://vqbivxrhj0qj"]
 
-[ext_resource type="Texture2D" uid="uid://njwm12pjd2pe" path="res://icon.svg" id="1_jwrmm"]
 [ext_resource type="Script" uid="uid://8xu18pup7qjw" path="res://skrypty/tile.gd" id="1_t6v6y"]
 
 [node name="Tile" type="Node2D" unique_id=774476516]
 script = ExtResource("1_t6v6y")
 
-[node name="Sprite2D" type="Sprite2D" parent="." unique_id=911407085]
-texture = ExtResource("1_jwrmm")
+[node name="ColorRect" type="ColorRect" parent="." unique_id=83927317]
+offset_left = -20.0
+offset_top = -21.0
+offset_right = 20.0
+offset_bottom = 19.0
+color = Color(0, 0, 0, 1)
