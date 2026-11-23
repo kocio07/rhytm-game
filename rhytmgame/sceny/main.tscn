@@ -1,3 +1,19 @@
 [gd_scene format=3 uid="uid://be0nxbpoqo2u5"]
 
+[ext_resource type="Script" uid="uid://cxondolbmqy84" path="res://skrypty/main.gd" id="1_8gesx"]
+[ext_resource type="AudioStream" uid="uid://dryj4wyi7bf46" path="res://muzyczki/TheFatRat - Unity.mp3" id="1_b4mbv"]
+[ext_resource type="Script" uid="uid://dmksruporj65b" path="res://skrypty/beat_clock.gd" id="3_8gesx"]
+
 [node name="Main" type="Node2D" unique_id=1461893033]
+script = ExtResource("1_8gesx")
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=642165050]
+position = Vector2(575, 324)
+
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer" parent="." unique_id=1866226788]
+stream = ExtResource("1_b4mbv")
+
+[node name="RingsContainer" type="Node2D" parent="." unique_id=316504137]
+
+[node name="BeatClock" type="Node" parent="." unique_id=1469814152]
+script = ExtResource("3_8gesx")
