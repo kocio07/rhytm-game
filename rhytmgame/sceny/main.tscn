@@ -3,6 +3,20 @@
 [ext_resource type="AudioStream" uid="uid://dryj4wyi7bf46" path="res://muzyczki/TheFatRat - Unity.mp3" id="1_b4mbv"]
 
 [sub_resource type="GDScript" id="GDScript_46r8n"]
+script/source = "extends Node2D
+
+@export var tile_scene: PackedScene
+@export var bpm: float = 120.0
+@export var approach_time: float = 1.2
+@export var hit_window: float = 0.16
+@export var miss_window: float = 0.22
+
+@export_group(\"recording chart\")
+@export var record_mode: bool = false
+@export var record_pitch_scale: float = 0.75
+@export var snap_step: float = 0.25 # 0.25 = szesnastka 0.5 = ósemka 0.0 = bez przyciągania
+@export var chart_path: String = \"user://chart.json\"
+"
 
 [node name="Main" type="Node2D" unique_id=1461893033]
 script = SubResource("GDScript_46r8n")
