@@ -17,3 +17,5 @@ stream = ExtResource("1_b4mbv")
 
 [node name="BeatClock" type="Node" parent="." unique_id=1469814152]
 script = ExtResource("3_8gesx")
+music = ExtResource("1_b4mbv")
+bpm = 105.0
