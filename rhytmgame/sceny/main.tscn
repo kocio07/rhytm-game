@@ -16,5 +16,6 @@ stream = ExtResource("1_b4mbv")
 [node name="Lanes" type="Node2D" parent="." unique_id=2016731762]
 
 [node name="HitMarker" type="Marker2D" parent="." unique_id=1112532239]
+position = Vector2(594, 488)
 
 [node name="NotesBox" type="Node2D" parent="." unique_id=1928295254]
