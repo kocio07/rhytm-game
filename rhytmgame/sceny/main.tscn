@@ -26,7 +26,6 @@ const LANE_KEYS := [\"lane0\", \"lane1\", \"lane2\", \"lane3\"]
 @onready var notes_container: Node2D = $NotesContainer
 @onready var score_label: Label = $CanvasLayer/ScoreLabel
 
-
 var chart_notes: Array = []
 var recorded_notes: Array = []
 var next_spawn_index: int = 0
@@ -43,7 +42,7 @@ func _ready() -> void:
 	if record_mode:
 		_load_existing_chart_if_present()
 		music_player.pitch_scale = record_pitch_scale
-		_update_ui(\"REC: click keys, S = save\")
+		_update_ui(\"REC: click keys, space = save\")
 	else:
 		_load_chart()
 		music_player.pitch_scale = 1.0
@@ -144,7 +143,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	var song_time := _get_song_time()
 
 	if record_mode:
-		if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_S:
+		if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_SPACE:
 			_save_recorded_chart()
 			return
 
@@ -176,6 +175,9 @@ func _record_note(lane: int, song_time: float) -> void:
 	_update_ui(\"REC | Nut: %d | Beat: %.2f\" % [recorded_notes.size(), final_beat])
 
 func _save_recorded_chart() -> void:
+	var dir_global := ProjectSettings.globalize_path(chart_path.get_base_dir())
+	DirAccess.make_dir_recursive_absolute(dir_global)
+
 	recorded_notes.sort_custom(func(a, b): return a[\"beat\"] < b[\"beat\"])
 	var payload := {
 		\"bpm\": bpm,
@@ -216,7 +218,7 @@ func _try_hit_lane(lane: int, song_time: float) -> void:
 		best_tile.is_hit = true
 		combo += 1
 		var points := 300 if best_diff <= 0.05 else 100
-		score += points * max(1, combo / 10 + 1)
+		score += points * max(1, int(combo / 10.0) + 1)
 		_update_ui(\"perfect!\" if best_diff <= 0.05 else \"good\")
 		active_tiles.erase(best_tile)
 		best_tile.queue_free()
@@ -233,6 +235,7 @@ func _update_ui(judgement: String) -> void:
 [node name="Main" type="Node2D" unique_id=1461893033]
 script = SubResource("GDScript_46r8n")
 tile_scene = ExtResource("1_mh27j")
+record_mode = true
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=642165050]
 position = Vector2(575, 324)
