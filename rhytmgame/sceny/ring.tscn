@@ -1,6 +1,0 @@
-[gd_scene format=3 uid="uid://csewfwowc7a2b"]
-
-[ext_resource type="Script" uid="uid://d3m1io7p0rwk5" path="res://skrypty/ring.gd" id="1_s22mr"]
-
-[node name="Ring" type="Node2D" unique_id=1588662992]
-script = ExtResource("1_s22mr")
