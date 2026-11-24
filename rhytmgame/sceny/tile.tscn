@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://8xu18pup7qjw" path="res://skrypty/tile.gd" id="1_t6v6y"]
 
 [node name="Tile" type="Node2D" unique_id=774476516]
+rotation = -1.5717771
 script = ExtResource("1_t6v6y")
 
 [node name="ColorRect" type="ColorRect" parent="." unique_id=83927317]

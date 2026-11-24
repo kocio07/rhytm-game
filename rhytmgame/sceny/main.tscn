@@ -31,7 +31,7 @@ var recorded_notes: Array = []
 var next_spawn_index: int = 0
 var active_tiles: Array = []
 var lane_centers: Array[float] = []
-var lane_width: float = 120.0
+var lane_width: float = 200.0
 
 var score: int = 0
 var combo: int = 0
@@ -238,18 +238,15 @@ tile_scene = ExtResource("1_mh27j")
 record_pitch_scale = 0.65
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=642165050]
-position = Vector2(645, 358)
+position = Vector2(640, 360)
 
 [node name="MusicPlayer" type="AudioStreamPlayer" parent="." unique_id=1967065900]
 stream = ExtResource("1_b4mbv")
-
-[node name="Lanes" type="Node2D" parent="." unique_id=2016731762]
 
 [node name="HitLane" type="Marker2D" parent="." unique_id=1112532239]
 position = Vector2(643, 592)
 
 [node name="NotesContainer" type="Node2D" parent="." unique_id=1928295254]
-position = Vector2(-4, 0)
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1412352843]
 

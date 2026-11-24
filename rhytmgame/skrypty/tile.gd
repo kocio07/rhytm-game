@@ -7,6 +7,7 @@ var approach_time = 3.0 # how many secs before hit tile will spawn
 var spawn_y: float = -100
 var is_hit = false
 
+@export var tile_height: float = 110.0
 @onready var visual = $ColorRect
 
 func setup(p_lane: int, p_target_time: float, p_x: float, p_hit_lane: float, p_approach_time: float, p_width: float) -> void:
@@ -16,9 +17,8 @@ func setup(p_lane: int, p_target_time: float, p_x: float, p_hit_lane: float, p_a
 	approach_time = p_approach_time
 	position = Vector2(p_x, spawn_y)
 	
-	visual.size = Vector2(p_width - 8.0, 110.0)
-	visual.position = Vector2(p_x, spawn_y)
-	
+	visual.size = Vector2(p_width - 8.0, tile_height)
+	visual.position = -visual.size / 2.0 
 	
 func update_position(song_time: float) -> void:
 	var time_remaining: float = target_time - song_time
