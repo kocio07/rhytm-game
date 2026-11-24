@@ -52,10 +52,10 @@ func _ready() -> void:
 	song_started = true
 
 func _setup_lanes() -> void:
-	var viewport_width := get_viewport_rect().size.x
-	lane_width = min(130.0, viewport_width / LANE_COUNT)
-	var total_width := lane_width * LANE_COUNT
-	var start_x := (viewport_width - total_width) / 2.0 + lane_width / 2.0
+	var viewport_width = get_viewport_rect().size.x
+	lane_width = min(150.0, viewport_width / LANE_COUNT)
+	var total_width = lane_width * LANE_COUNT
+	var start_x = (viewport_width - total_width) / 2.0 + lane_width / 2.0
 
 	lane_centers.clear()
 	for i in range(LANE_COUNT):
@@ -235,21 +235,21 @@ func _update_ui(judgement: String) -> void:
 [node name="Main" type="Node2D" unique_id=1461893033]
 script = SubResource("GDScript_46r8n")
 tile_scene = ExtResource("1_mh27j")
+record_pitch_scale = 0.65
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=642165050]
-position = Vector2(575, 324)
+position = Vector2(645, 358)
 
 [node name="MusicPlayer" type="AudioStreamPlayer" parent="." unique_id=1967065900]
 stream = ExtResource("1_b4mbv")
 
 [node name="Lanes" type="Node2D" parent="." unique_id=2016731762]
-position = Vector2(-3, 0)
 
 [node name="HitLane" type="Marker2D" parent="." unique_id=1112532239]
-position = Vector2(596, 555)
+position = Vector2(643, 592)
 
 [node name="NotesContainer" type="Node2D" parent="." unique_id=1928295254]
-position = Vector2(-675, -1)
+position = Vector2(-4, 0)
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1412352843]
 

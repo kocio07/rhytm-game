@@ -3,7 +3,7 @@ extends Node2D
 var lane = 0
 var target_time = 0.0
 var hit_lane: float = 500
-var approach_time = 1.2 # how many secs before hit tile will spawn
+var approach_time = 3.0 # how many secs before hit tile will spawn
 var spawn_y: float = -100
 var is_hit = false
 
