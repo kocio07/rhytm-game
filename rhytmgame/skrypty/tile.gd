@@ -7,7 +7,7 @@ var approach_time = 3.0 # how many secs before hit tile will spawn
 var spawn_y: float = -100
 var is_hit = false
 
-@export var tile_height: float = 110.0
+@export var tile_height: float = 150.0
 @onready var visual = $ColorRect
 
 func setup(p_lane: int, p_target_time: float, p_x: float, p_hit_lane: float, p_approach_time: float, p_width: float) -> void:

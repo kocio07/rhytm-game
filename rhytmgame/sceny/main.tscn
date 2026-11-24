@@ -33,7 +33,7 @@ var active_tiles: Array = []
 var lane_centers: Array[float] = []
 var lane_width: float = 200.0 # szerokosc torow
 var lane_spacing: float = 200.0  #odleglosc miedzy torami jakby
-var tile_width: float = 140.0 #szerokosc kafelka
+var tile_width: float = 100.0 #szerokosc kafelka
 
 var score: int = 0
 var combo: int = 0
