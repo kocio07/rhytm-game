@@ -25,3 +25,12 @@ func update_position(song_time: float) -> void:
 	# progress = 0.0 na starcie (spawn_y) 1.0 wtedy kiedy trafiam (hit_lane)
 	var progress: float = 1.0 - (time_remaining / approach_time)
 	position.y = lerp(spawn_y, hit_lane, progress)
+
+
+#effect 0
+func play_hit() -> void:
+	is_hit = true
+	var tw = create_tween().set_parallel(true)
+	tw.tween_property(self, "scale", Vector2(1.3, 1.3), 0.15)
+	tw.tween_property(self, "modulate:a", 0.0, 0.15)
+	tw.chain().tween_callback(queue_free)

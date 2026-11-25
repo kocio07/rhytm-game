@@ -218,13 +218,13 @@ func _try_hit_lane(lane: int, song_time: float) -> void:
 			best_tile = tile
 
 	if best_tile != null:
-		best_tile.is_hit = true
+		best_tile.play_hit()
 		combo += 1
 		var points := 300 if best_diff <= 0.05 else 100
 		score += points * max(1, int(combo / 10.0) + 1)
 		_update_ui(\"perfect!\" if best_diff <= 0.05 else \"good\")
 		active_tiles.erase(best_tile)
-		best_tile.queue_free()
+		
 
 func _register_miss(tile) -> void:
 	combo = 0
@@ -260,10 +260,10 @@ stream = ExtResource("1_b4mbv")
 position = Vector2(643, 592)
 
 [node name="ColorRect" type="ColorRect" parent="HitLane" unique_id=425184009]
-offset_left = -646.0
-offset_top = 45.0
-offset_right = 634.0
-offset_bottom = 59.0
+offset_left = -643.0
+offset_top = 33.0
+offset_right = 637.0
+offset_bottom = 47.0
 
 [node name="NotesContainer" type="Node2D" parent="." unique_id=1928295254]
 
