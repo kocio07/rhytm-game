@@ -41,6 +41,7 @@ var song_started: bool = false
 
 func _ready() -> void:
 	_setup_lanes()
+	queue_redraw()
 	if record_mode:
 		_load_existing_chart_if_present()
 		music_player.pitch_scale = record_pitch_scale
@@ -232,6 +233,17 @@ func _register_miss(tile) -> void:
 
 func _update_ui(judgement: String) -> void:
 	score_label.text = \"%s | score: %d | combo: x%d\" % [judgement, score, combo]
+
+ #drawing lines to seperate lanes
+func _draw() -> void:
+	var h = get_viewport_rect().size.y
+	var left = lane_centers[0] - lane_spacing / 2.0
+	# tlo torów
+	for i in range(LANE_COUNT):
+		draw_rect(Rect2(left + i * lane_spacing, 0, lane_spacing, h), Color(0.3, 0.3, 0.3))
+	# separatory 
+	for i in range(LANE_COUNT + 1):
+		draw_rect(Rect2(left + i * lane_spacing - 2.0, 0, 4.0, h), Color.WHITE)
 "
 
 [node name="Main" type="Node2D" unique_id=1461893033]
@@ -254,18 +266,3 @@ position = Vector2(643, 592)
 [node name="ScoreLabel" type="Label" parent="CanvasLayer" unique_id=908717537]
 offset_right = 40.0
 offset_bottom = 23.0
-
-[node name="ColorRect" type="ColorRect" parent="." unique_id=1208544102]
-offset_left = 424.0
-offset_right = 440.0
-offset_bottom = 720.0
-
-[node name="ColorRect2" type="ColorRect" parent="." unique_id=1809507075]
-offset_left = 834.0
-offset_right = 850.0
-offset_bottom = 720.0
-
-[node name="ColorRect3" type="ColorRect" parent="." unique_id=984324199]
-offset_left = 634.0
-offset_right = 650.0
-offset_bottom = 720.0
