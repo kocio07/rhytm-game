@@ -42,6 +42,8 @@ var song_started: bool = false
 #effects
 
 var flash: Array[float] = [0.0, 0.0, 0.0, 0.0]
+const FLASH_SPEED = 5.0   # wieksza liczba = krotszy blysk
+const FLASH_ALPHA = 0.25  # sila blysku (0-1)
 
 func _ready() -> void:
 	_setup_lanes()
@@ -114,7 +116,12 @@ func _get_song_time() -> float:
 		return 0.0
 	return music_player.get_playback_position() + AudioServer.get_time_since_last_mix()
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	# wygaszanie blysku torow + odswiezenie rysowania
+	for i in range(LANE_COUNT):
+		flash[i] = max(0.0, flash[i] - delta * FLASH_SPEED)
+	queue_redraw()
+
 	if not song_started:
 		return
 
@@ -168,6 +175,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		var clicked_lane := _get_lane_from_x(event.position.x)
 		if clicked_lane != -1:
+			flash[clicked_lane] = 1.0
 			_try_hit_lane(clicked_lane, song_time)
 
 func _record_note(lane: int, song_time: float) -> void:
@@ -247,6 +255,10 @@ func _draw() -> void:
 	# tlo torów
 	for i in range(LANE_COUNT):
 		draw_rect(Rect2(left + i * lane_spacing, 0, lane_spacing, h), Color(0.33, 0.21, 0.571, 1.0))
+	# blysk po nacisnieciu klawisza
+	for i in range(LANE_COUNT):
+		if flash[i] > 0.0:
+			draw_rect(Rect2(left + i * lane_spacing, 0, lane_spacing, h), Color(1, 1, 1, flash[i] * FLASH_ALPHA))
 	# separatory 
 	for i in range(LANE_COUNT + 1):
 		draw_rect(Rect2(left + i * lane_spacing - 2.0, 0, 4.0, h), Color.WHITE)
