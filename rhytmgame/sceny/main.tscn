@@ -39,6 +39,10 @@ var score: int = 0
 var combo: int = 0
 var song_started: bool = false
 
+#effects
+
+var flash: Array[float] = [0.0, 0.0, 0.0, 0.0]
+
 func _ready() -> void:
 	_setup_lanes()
 	queue_redraw()
@@ -143,7 +147,7 @@ func _process(_delta: float) -> void:
 			active_tiles.remove_at(i)
 
 func _unhandled_input(event: InputEvent) -> void:
-	var song_time := _get_song_time()
+	var song_time = _get_song_time()
 
 	if record_mode:
 		if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_SPACE:
@@ -152,11 +156,13 @@ func _unhandled_input(event: InputEvent) -> void:
 
 		for lane_idx in range(LANE_COUNT):
 			if event.is_action_pressed(LANE_KEYS[lane_idx]):
+				flash[lane_idx] = 1.0
 				_record_note(lane_idx, song_time)
 		return
 
 	for lane_idx in range(LANE_COUNT):
 		if event.is_action_pressed(LANE_KEYS[lane_idx]):
+			flash[lane_idx] = 1.0
 			_try_hit_lane(lane_idx, song_time)
 
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
